@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>My Profile - Blog App</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+    <div class="container">
+
+        <h1>My Profile</h1>
+
+        <div id="profile">
+
+            <p>Loading profile...</p>
+
+        </div>
+
+
+        <br>
+
+
+        <a href="dashboard.html">
+            <button type="button">
+                Back to Dashboard
+            </button>
+        </a>
+
+
+        <button type="button" onclick="logout()">
+            Logout
+        </button>
+
+    </div>
+
+
+    <script>
+
+        // Get JWT token
+        const token = localStorage.getItem("token");
+
+
+        // Protect profile page
+        if (!token) {
+
+            window.location.href = "login.html";
+
+        }
+
+
+        // Load user profile
+        async function loadProfile() {
+
+            try {
+
+                const response = await fetch(
+                    "/api/auth/profile",
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "Authorization": "Bearer " + token
+                        }
+                    }
+                );
+
+
+                const data = await response.json();
+
+
+                if (!response.ok) {
+
+                    document.getElementById("profile").innerHTML =
+                        `<p>${data.message}</p>`;
+
+                    return;
+
+                }
+
+
+                document.getElementById("profile").innerHTML = `
+
+                    <h2>${data.name}</h2>
+
+                    <p>
+                        <strong>Email:</strong>
+                        ${data.email}
+                    </p>
+
+                    <p>
+                        <strong>Account Created:</strong>
+                        ${new Date(data.createdAt).toLocaleDateString()}
+                    </p>
+
+                `;
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                document.getElementById("profile").innerHTML = `
+
+                    <p>
+                        Unable to load profile.
+                    </p>
+
+                `;
+
+            }
+
+        }
+
+
+        // Logout
+        function logout() {
+
+            localStorage.removeItem("token");
+
+            localStorage.removeItem("user");
+
+            window.location.href = "login.html";
+
+        }
+
+
+        // Run profile function
+        loadProfile();
+
+    </script>
+
+</body>
+
+</html>

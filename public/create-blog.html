@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Blog - Blog App</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Create New Blog</h1>
+
+        <form id="blogForm">
+
+            <input
+                type="text"
+                id="title"
+                placeholder="Enter blog title"
+                required
+            >
+
+            <textarea
+                id="content"
+                placeholder="Write your blog content..."
+                rows="10"
+                required
+            ></textarea>
+
+            <button type="submit">
+                Create Blog
+            </button>
+
+        </form>
+
+        <p id="message"></p>
+
+        <p>
+            <a href="dashboard.html">Back to Dashboard</a>
+        </p>
+
+    </div>
+
+
+    <script>
+
+        const token = localStorage.getItem("token");
+
+        // Protect page
+        if (!token) {
+            window.location.href = "login.html";
+        }
+
+
+        const blogForm =
+            document.getElementById("blogForm");
+
+        const message =
+            document.getElementById("message");
+
+
+        blogForm.addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+
+            const title =
+                document.getElementById("title").value;
+
+            const content =
+                document.getElementById("content").value;
+
+
+            try {
+
+                const response = await fetch(
+                    "/api/blogs",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": "Bearer " + token
+                        },
+
+                        body: JSON.stringify({
+                            title: title,
+                            content: content
+                        })
+                    }
+                );
+
+
+                const data = await response.json();
+
+
+                if (response.ok) {
+
+                    message.textContent =
+                        "Blog created successfully!";
+
+
+                    blogForm.reset();
+
+
+                    setTimeout(function() {
+
+                        window.location.href =
+                            "dashboard.html";
+
+                    }, 1000);
+
+
+                } else {
+
+                    message.textContent =
+                        data.message;
+
+                }
+
+
+            } catch (error) {
+
+                message.textContent =
+                    "Server error. Please try again.";
+
+                console.error(error);
+
+            }
+
+        });
+
+    </script>
+
+</body>
+</html>

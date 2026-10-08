@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard - Blog App</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>My Dashboard</h1>
+
+        <p id="welcome"></p>
+
+        <div class="menu">
+            <a href="create-blog.html">
+                <button>Create Blog</button>
+            </a>
+
+            <a href="profile.html">
+                <button>My Profile</button>
+            </a>
+
+            <button onclick="logout()">
+                Logout
+            </button>
+        </div>
+
+        <hr>
+
+        <h2>My Blogs</h2>
+
+        <div id="blogsContainer">
+            Loading blogs...
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // Get JWT token
+        const token = localStorage.getItem("token");
+
+        // Get saved user
+        const userData = localStorage.getItem("user");
+
+
+        // Protect dashboard
+        if (!token) {
+
+            window.location.href = "login.html";
+
+        }
+
+
+        // Display welcome message
+        if (userData) {
+
+            const user = JSON.parse(userData);
+
+            document.getElementById("welcome").textContent =
+                "Welcome, " + user.name + "!";
+
+        }
+
+
+        // Load logged-in user's blogs
+        async function loadMyBlogs() {
+
+            const blogsContainer =
+                document.getElementById("blogsContainer");
+
+
+            try {
+
+                const response = await fetch(
+                    "/api/blogs/my-blogs",
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "Authorization": "Bearer " + token
+                        }
+                    }
+                );
+
+
+                const blogs = await response.json();
+
+
+                if (!response.ok) {
+
+                    blogsContainer.innerHTML =
+                        "<p>" + blogs.message + "</p>";
+
+                    return;
+                }
+
+
+                if (blogs.length === 0) {
+
+                    blogsContainer.innerHTML =
+                        "<p>You have not created any blogs yet.</p>";
+
+                    return;
+                }
+
+
+                blogsContainer.innerHTML = "";
+
+
+                blogs.forEach(function(blog) {
+
+                    const blogDiv =
+                        document.createElement("div");
+
+                    blogDiv.className = "blog-card";
+
+
+                    blogDiv.innerHTML = `
+                        <h3>${blog.title}</h3>
+
+                        <p>${blog.content}</p>
+
+                        <small>
+                            Created on:
+                            ${new Date(blog.createdAt).toLocaleDateString()}
+                        </small>
+
+                        <br><br>
+
+                        <a href="blog.html?id=${blog._id}">
+                            View Blog
+                        </a>
+                    `;
+
+
+                    blogsContainer.appendChild(blogDiv);
+
+                });
+
+
+            } catch (error) {
+
+                blogsContainer.innerHTML =
+                    "<p>Unable to load blogs.</p>";
+
+                console.error(error);
+
+            }
+
+        }
+
+
+        // Logout
+        function logout() {
+
+            localStorage.removeItem("token");
+
+            localStorage.removeItem("user");
+
+            window.location.href = "login.html";
+
+        }
+
+
+        loadMyBlogs();
+
+    </script>
+
+</body>
+</html>

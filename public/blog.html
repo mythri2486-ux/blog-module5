@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>View Blog - Blog App</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1 id="blogTitle">Loading...</h1>
+
+        <p id="blogAuthor"></p>
+
+        <p id="blogDate"></p>
+
+        <hr>
+
+        <div id="blogContent">
+            Loading blog...
+        </div>
+
+        <br>
+
+        <a href="dashboard.html">
+            <button type="button">
+                Back to Dashboard
+            </button>
+        </a>
+
+    </div>
+
+
+    <script>
+
+        // Get blog ID from URL
+        const urlParams = new URLSearchParams(
+            window.location.search
+        );
+
+        const blogId = urlParams.get("id");
+
+
+        // Check blog ID
+        if (!blogId) {
+
+            document.getElementById("blogContent").textContent =
+                "Blog ID not found.";
+
+        } else {
+
+            loadBlog();
+
+        }
+
+
+        // Load blog
+        async function loadBlog() {
+
+            try {
+
+                const response = await fetch(
+                    "/api/blogs/" + blogId
+                );
+
+
+                const blog = await response.json();
+
+
+                if (!response.ok) {
+
+                    document.getElementById("blogTitle").textContent =
+                        "Blog not found";
+
+                    document.getElementById("blogContent").textContent =
+                        blog.message || "Unable to load blog.";
+
+                    return;
+
+                }
+
+
+                // Display title
+                document.getElementById("blogTitle").textContent =
+                    blog.title;
+
+
+                // Display author
+                if (blog.author) {
+
+                    document.getElementById("blogAuthor").textContent =
+                        "Author: " + blog.author.name;
+
+                }
+
+
+                // Display date
+                document.getElementById("blogDate").textContent =
+                    "Created: " +
+                    new Date(blog.createdAt).toLocaleDateString();
+
+
+                // Display content
+                document.getElementById("blogContent").textContent =
+                    blog.content;
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                document.getElementById("blogContent").textContent =
+                    "Server error. Please try again.";
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>
